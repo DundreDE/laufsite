@@ -22,7 +22,7 @@ function startTracking() {
 
         watchId = navigator.geolocation.watchPosition(showPosition, showError, {
             enableHighAccuracy: true,
-            maximumAge: 10000,
+            maximumAge: 0,
             timeout: 5000
         });
 
@@ -33,11 +33,8 @@ function startTracking() {
 
         // Initial verstecken von Geschwindigkeits- und Höheninformationen
         document.getElementById('speedStats').classList.add('hidden');
-        // Verstecken der Fehlernachricht
-        document.getElementById('error-message').classList.add('hidden');
     } else {
         document.getElementById('status').innerText = "Geolocation wird von diesem Browser nicht unterstützt.";
-        showError({ code: 0 }); // Custom Error Code for unsupported browsers
     }
 }
 
@@ -76,10 +73,9 @@ function stopTracking() {
 function showPosition(position) {
     const latitude = position.coords.latitude;
     const longitude = position.coords.longitude;
-    const accuracy = position.coords.accuracy;
+    const accuracy = position.coords.accuracy; // Genauigkeit der Standortdaten
     const altitude = position.coords.altitude;
     const altitudeAccuracy = position.coords.altitudeAccuracy;
-    const currentTime = new Date();
 
     if (lastPosition) {
         const distance = calculateDistance(
@@ -88,7 +84,7 @@ function showPosition(position) {
         );
         totalDistance += distance;
 
-        const timeElapsed = (currentTime - lastPosition.time) / 1000; // Zeit in Sekunden
+        const timeElapsed = (new Date() - lastPosition.time) / 1000; // Zeit in Sekunden
         const speed = distance / timeElapsed; // Geschwindigkeit in m/s
         if (speed > maxSpeed) {
             maxSpeed = speed;
@@ -103,18 +99,14 @@ function showPosition(position) {
     }
 
     document.getElementById('status').innerText = "Standort gefunden!";
-    document.getElementById('coords').innerText = `Breitengrad: ${latitude}, Längengrad: ${longitude}, Genauigkeit: ${accuracy} Meter`;
+    document.getElementById('coords').innerText = `Breitengrad: ${latitude}, Längengrad: ${longitude}, Genauigkeit: ${accuracy.toFixed(2)} Meter`;
     document.getElementById('distance').innerText = `Zurückgelegte Strecke: ${totalDistance.toFixed(2)} Meter`;
-    if (altitude !== null) {
-        document.getElementById('altitude').innerText = `Höhe: ${altitude.toFixed(2)} Meter, Genauigkeit: ${altitudeAccuracy} Meter`;
-    } else {
-        document.getElementById('altitude').innerText = "Höhe: Unbekannt";
-    }
+    document.getElementById('altitude').innerText = altitude !== null ? `Höhe: ${altitude.toFixed(2)} Meter, Genauigkeit: ${altitudeAccuracy} Meter` : "Höhe: Unbekannt";
 
     lastPosition = {
         latitude: latitude,
         longitude: longitude,
-        time: currentTime,
+        time: new Date(),
         altitude: altitude
     };
 }
@@ -168,4 +160,17 @@ function toggleDarkMode() {
     document.body.classList.toggle('dark');
     const isDarkMode = document.body.classList.contains('dark');
     document.getElementById('toggleDarkMode').innerText = isDarkMode ? 'Toggle Light Mode' : 'Toggle Dark Mode';
+    // Speicher die Wahl des Users im Local Storage
+    localStorage.setItem('darkMode', isDarkMode);
 }
+
+// Lade die gespeicherte Dark Mode-Einstellung beim Laden der Seite
+document.addEventListener('DOMContentLoaded', () => {
+    const darkModeEnabled = localStorage.getItem('darkMode') === 'true';
+    if (darkModeEnabled) {
+        document.body.classList.add('dark');
+        document.getElementById('toggleDarkMode').innerText = 'Toggle Light Mode';
+    } else {
+        document.getElementById('toggleDarkMode').innerText = 'Toggle Dark Mode';
+    }
+});
