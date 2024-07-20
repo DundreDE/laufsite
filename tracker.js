@@ -33,8 +33,11 @@ function startTracking() {
 
         // Initial verstecken von Geschwindigkeits- und Höheninformationen
         document.getElementById('speedStats').classList.add('hidden');
+        // Verstecken der Fehlernachricht
+        document.getElementById('error-message').classList.add('hidden');
     } else {
         document.getElementById('status').innerText = "Geolocation wird von diesem Browser nicht unterstützt.";
+        showError({ code: 0 }); // Custom Error Code for unsupported browsers
     }
 }
 
@@ -136,41 +139,33 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
               Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-    const distance = R * c; // Entfernung in Metern
-    return distance;
+    return R * c; // in Metern
 }
 
 function showError(error) {
-    switch(error.code) {
+    let errorMessage = "";
+    switch (error.code) {
         case error.PERMISSION_DENIED:
-            document.getElementById('status').innerText = "Benutzer hat die Standortanfrage abgelehnt.";
+            errorMessage = "Benutzer hat die Anfrage für Standortdaten abgelehnt.";
             break;
         case error.POSITION_UNAVAILABLE:
-            document.getElementById('status').innerText = "Standortinformationen sind nicht verfügbar.";
+            errorMessage = "Standortdaten sind nicht verfügbar.";
             break;
         case error.TIMEOUT:
-            document.getElementById('status').innerText = "Die Anfrage zum Abrufen des Standorts ist abgelaufen.";
+            errorMessage = "Die Anfrage für Standortdaten ist abgelaufen.";
             break;
         case error.UNKNOWN_ERROR:
-            document.getElementById('status').innerText = "Ein unbekannter Fehler ist aufgetreten.";
+            errorMessage = "Ein unbekannter Fehler ist aufgetreten.";
             break;
+        default:
+            errorMessage = "Ein Fehler ist aufgetreten.";
     }
+    document.getElementById('error-message').innerText = errorMessage;
+    document.getElementById('error-message').classList.remove('hidden');
 }
 
 function toggleDarkMode() {
-    const isDarkMode = document.body.classList.toggle('dark');
-    document.getElementById('toggleDarkMode').innerText = isDarkMode ? "Light Mode" : "Dark Mode";
-    localStorage.setItem('darkMode', isDarkMode.toString());
+    document.body.classList.toggle('dark');
+    const isDarkMode = document.body.classList.contains('dark');
+    document.getElementById('toggleDarkMode').innerText = isDarkMode ? 'Toggle Light Mode' : 'Toggle Dark Mode';
 }
-
-// Lade die gespeicherte Dark Mode-Einstellung beim Laden der Seite
-document.addEventListener('DOMContentLoaded', () => {
-    const darkModeEnabled = localStorage.getItem('darkMode') === 'true';
-    if (darkModeEnabled) {
-        document.body.classList.add('dark');
-        document.getElementById('toggleDarkMode').innerText = "Light Mode";
-    } else {
-        document.body.classList.remove('dark');
-        document.getElementById('toggleDarkMode').innerText = "Dark Mode";
-    }
-});
