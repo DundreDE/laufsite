@@ -1,0 +1,14 @@
+/* styles.css (importiert in deine HTML-Datei oder build-Tool) */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Hier kannst du benutzerdefinierte Dark Mode-Stile hinzufügen */
+@layer base {
+  .dark .bg-gray-100 {
+    background-color: #1a202c; /* dunkles Hintergrund */
+  }
+  .dark .text-gray-900 {
+    color: #edf2f7; /* helles Text */
+  }
+}
